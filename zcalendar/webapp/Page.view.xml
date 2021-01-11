@@ -4,8 +4,13 @@
 	xmlns:core="sap.ui.core"
 	xmlns:unified="sap.ui.unified"
 	xmlns="sap.m">
+<Panel expandable="true" headerText="Calendar" width="auto" class="sapUiResponsiveMargin">
+		<unified:Calendar
+				id="calendar"
+				select="handleCalendarSelect" />
+</Panel>
 	<Table
-		headerText="Products"
+		headerText="Appointments"
 		items="{
 			path:'/Calendars'
 		}" >
