@@ -1,0 +1,59 @@
+{
+	"_version": "1.8.0",
+	"sap.app": {
+		"id": "com.eae.zplanner",
+		"applicationVersion": {
+			"version": "1.0.0"
+        },
+        "type": "application",
+        "title": "{{appTitle}}",
+		"dataSources": {
+			"ScheduleService": {
+				"uri": "/odata/v4/ScheduleService/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "4.0"
+				}
+			}
+		}
+	},
+	"sap.ui5": {
+		"rootView": {
+			"viewName": "com.eae.zplanner.Page",
+			"type": "XML",
+			"async": true
+		},
+		"dependencies": {
+			"libs": {
+				"sap.ui.unified": {},
+				"sap.ui.core": {},
+				"sap.ui.layout": {},
+				"sap.m": {}
+			}
+		},
+		"models": {
+			"i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"uri": "i18n/i18n.properties"
+			},
+			"": {
+				"dataSource": "ScheduleService",
+				"settings": {
+                    "synchronizationMode": "None",
+                    "operationMode": "Server",
+                    "autoExpandSelect" : true,
+                    "earlyRequests": true,
+                    "groupProperties": {
+                        "default": {
+                          "submit": "Auto"
+                        }
+                    }
+				}
+			}
+		}
+	},
+    "sap.ui": {
+        "technology": "UI5",
+        "fullWidth": false
+    }
+}

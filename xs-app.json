@@ -1,0 +1,23 @@
+{
+	"welcomeFile": "/app/fiori.html",
+	"authenticationMethod": "route",
+	"routes": [
+	  {
+		"source": "^/app/(.*)$",
+		"cacheControl": "no-cache, no-store, must-revalidate",
+		"target": "$1", 
+		"localDir": "./",
+		"authenticationType": "none"
+	  },
+	  {
+		"source": "^/zcalendar/webapp/(.*)$",
+		"localDir": "./",
+		"authenticationType": "none"
+	  },
+	  {
+		"source": "^/odata/(.*)$",
+		"authenticationType": "none",
+		"destination": "backend"
+	  }
+	]
+}
