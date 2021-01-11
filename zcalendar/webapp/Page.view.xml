@@ -40,9 +40,9 @@
 		<ColumnListItem>
 			<Text text="{Date}" />
 			<Text text="{Timefrom}-{TimeTo}" />
-			<HBox> <CheckBox></CheckBox>  <Input value="{Room1/name}" /> </HBox> 
-			<HBox> <CheckBox></CheckBox>  <Input value="{Room2/name}" /> </HBox> 
-			<HBox> <CheckBox></CheckBox>  <Input value="{Room3/name}" /> </HBox> 
+			<VBox> <CheckBox></CheckBox>  <Input value="{Room1/name}" /> </VBox> 
+			<VBox> <CheckBox></CheckBox>  <Input value="{Room2/name}" /> </VBox> 
+			<VBox> <CheckBox></CheckBox>  <Input value="{Room3/name}" /> </VBox> 
 			
 		</ColumnListItem>
 	</Table>
