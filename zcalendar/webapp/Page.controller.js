@@ -11,134 +11,132 @@ sap.ui.define([
 function(coreLibrary, Fragment, Controller, DateFormat, JSONModel, unifiedLibrary, mobileLibrary, MessageToast) {
 	"use strict";
 
-	var CalendarDayType = unifiedLibrary.CalendarDayType;
-	var ValueState = coreLibrary.ValueState;
-	var StickyMode = mobileLibrary.PlanningCalendarStickyMode;
-
 	return Controller.extend("com.eae.zplanner.Page", {
+		getDateFormatter: function() {
+			return DateFormat.getDateInstance({
+			pattern: "YYYY-MM-dd"
+		});
+		},
 
 		onInit: function() {
 			// set explored app's demo model on this sample
-			var oModel = new JSONModel(sap.ui.require.toUrl("sap/ui/demo/mock/products.json"));
-			this.getView().setModel(oModel);
+			this.table = this.getView().byId("timeSlotTable");
 
-			var oModel = new JSONModel();
-			oModel.setData({"Calendars" :[
-				{
-					"Date" : "Mon 19, 2021",
-					"Timefrom" : "12:00",
-					"TimeTo" : "13:00",
-					"Room 1":{
-						"isFree" : true,
-						"name" : ""
-					},
-					"Room 2":{
-						"isFree" : true,
-						"name" : ""
-					},
-					"Room 3":{
-						"isFree" : true,
-						"name" : ""
-					}
-				},
-				{
-					"Date" : "Mon 19, 2021",
-					"Timefrom" : "13:00",
-					"TimeTo" : "14:00",
-					"Room 1":{
-						"isFree" : true,
-						"name" : ""
-					},
-					"Room 2":{
-						"isFree" : true,
-						"name" : ""
-					},
-					"Room 3":{
-						"isFree" : true,
-						"name" : ""
-					}
-				},
-				{
-					"Date" : "Mon 20, 2021",
-					"Timefrom" : "12:00",
-					"TimeTo" : "13:00",
-					"Room1":{
-						"isFree" : true,
-						"name" : "Masha"
-					},
-					"Room2":{
-						"isFree" : true,
-						"name" : ""
-					},
-					"Room3":{
-						"isFree" : true,
-						"name" : ""
-					}
-				},
-				{
-					"Date" : "Mon 20, 2021",
-					"Timefrom" : "13:00",
-					"TimeTo" : "14:00",
-					"Room1":{
-						"ZoomId" : "Room 1",
-						"isFree" : true,
-						"name" : "Masha"
-					},
-					"Room2":{
-						"ZoomId" : "Room 2",
-						"isFree" : true,
-						"name" : ""
-					},
-					"Room3":{
-						"ZoomId" : "Room 3",
-						"isFree" : true,
-						"name" : ""
-					}
-				},
-				{
-					"Date" : "Mon 21, 2021",
-					"Timefrom" : "12:00",
-					"TimeTo" : "13:00",
-					"Room 1":{
-						"isFree" : true,
-						"name" : ""
-					},
-					"Room 2":{
-						"isFree" : true,
-						"name" : ""
-					},
-					"Room 3":{
-						"isFree" : true,
-						"name" : ""
-					}
-				}
+			var uiModel = new JSONModel();
+			uiModel.setData({columns: [
 			]});
-			this.getView().setModel(oModel);
 
-			// oModel = new JSONModel();
-			// oModel.setData({allDay: false});
-			// this.getView().setModel(oModel, "allDay");
+			this.getView().setModel(uiModel, "ui");
 
-			// oModel = new JSONModel();
-			// oModel.setData({ stickyMode: StickyMode.None, enableAppointmentsDragAndDrop: true, enableAppointmentsResize: true, enableAppointmentsCreate: true });
-			// this.getView().setModel(oModel, "settings");
+			this.table.addColumn(new sap.m.Column({
+				header: new sap.m.Text({
+					text: "Time"
+				})
+			}))
+
+			$.get('/odata/v4/ScheduleService/Rooms?$orderby=name')
+			.done(function(data) {
+				var aColumns = uiModel.getProperty("/columns");
+				data.value.forEach(r => {
+					aColumns.push({
+						name: r.name,
+						id: r.ID
+					})
+					this.table.addColumn(new sap.m.Column({
+						header: new sap.m.Text({
+							text: r.name
+						})
+					}))
+				});
+				uiModel.setProperty("/columns", aColumns);
+			}.bind(this));
+
+			this.getView().getModel().attach
 		},
 
-		_typeFormatter: function(sType) {
-			var sTypeText = "",
-				aTypes = this.getView().getModel().getData().supportedAppointmentItems;
+		onBeforeRendering: function() {
+			var oBinding = this.table.getBinding("items").filter()
+			var today = new Date();
 
-			for (var  i = 0; i < aTypes.length; i++){
-				if (aTypes[i].type === sType){
-					sTypeText = aTypes[i].text;
+			var date = this.getDateFormatter().format(today);
+			this.table.setHeaderText(date);
+			oBinding.filter(
+				new sap.ui.model.Filter("date", sap.ui.model.FilterOperator.EQ, date)
+			);
+		},
+		handleCalendarSelect: function(oEvent) {
+			var oBinding = this.table.getBinding("items");
+			var selectedDate = oEvent.getParameter("newValue");
+			this.table.setHeaderText(selectedDate);
+			oBinding.filter(
+				new sap.ui.model.Filter("date", sap.ui.model.FilterOperator.EQ, selectedDate)
+			);
+		},
+
+		formatTimeRange: function(from, to) {
+			if(!(from || to)) {
+				return "";
+			}
+			var formatter = DateFormat.getDateInstance({
+				pattern: "hh:mm"
+			});
+			return formatter.format(new Date(from)) + " - " + formatter.format(new Date(to));
+		},
+
+		buildItems: function(sId, oContext) {
+			var object = oContext.getObject();
+			var lineItem = new sap.m.ColumnListItem();
+			var uiModel = this.getView().getModel("ui");
+			if(!uiModel) {
+				return lineItem;
+			}
+			var roomBookins = object.to_bookings;
+			var timeRange = new sap.m.Text();
+			timeRange.bindText({ 
+				parts:['start','ends'],  
+				formatter: this.formatTimeRange})
+			lineItem.addCell(timeRange);
+
+			for(var room of uiModel.getObject("/columns")) {
+				var isBooked = roomBookins.some((booking) => booking.to_room_ID === room.id);
+				
+				var input = new sap.m.Input({
+					value : isBooked ? "{name}" : "",
+					change: this.submitBookingData
+				});
+				if(isBooked) {
+					var booking = roomBookins.find(d => d.to_room_ID === room.id);
+					input.bindContext("/Bookings("+ booking.ID +")");
 				}
+				input.data("roomId", room.id);
+				lineItem.addCell(input);
 			}
+			
+			return lineItem;
+		},
 
-			if (sTypeText !== ""){
-				return sTypeText;
-			} else {
-				return sType;
+		submitBookingData : function (oEvent) {
+			if(!oEvent.getSource().getBinding("value")) {
+				var oContext = oEvent.getSource().getBindingContext();
+				var contextPath = oContext.getPath();
+				var roomId = oEvent.getSource().data("roomId");
+				var name = oEvent.getSource().getValue();
+				var model = oEvent.getSource().getModel();
+				var bc = model.bindContext(contextPath + "/ScheduleService.BookRoom(...)");
+				bc.setContext(oContext);
+				bc.setParameter("roomId", roomId);
+				bc.setParameter("name", name);
+				debugger;
+				bc.execute().then(function(d){
+					debugger;
+				});
 			}
+		},
+		onDataEvents : function (oEvent) {
+			sap.ui.core.BusyIndicator.hide();
+		},
+		dataRequested : function (oEvent) {
+			sap.ui.core.BusyIndicator.show(100);
 		}
 	});
 });

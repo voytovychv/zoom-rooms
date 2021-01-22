@@ -3,52 +3,36 @@
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
 	xmlns:unified="sap.ui.unified"
-	xmlns="sap.m">
-<Panel expandable="true" headerText="Calendar" width="auto" class="sapUiResponsiveMargin">
-		<unified:Calendar
-				id="calendar"
-				select="handleCalendarSelect" />
-</Panel>
-	<Table
-		headerText="Appointments"
-		items="{
-			path:'/Calendars'
-		}" >
-		<columns>
-			<Column mergeDuplicates="true">
-				<header>
-					<Text text="Date" />
-				</header>
-			</Column>
-			<Column>
-				<header>
-					<Text text="Time" />
-				</header>
-			</Column>
-			<Column>
-				<header>
-					<Text text="Zoom Room 1" />
-				</header>
-			</Column>
-			<Column>
-				<header>
-					<Text text="Zoom Room 2" />
-				</header>
-			</Column>
-			<Column
-				hAlign="End" >
-				<header>
-					<Text text="Zoom Room 3" />
-				</header>
-			</Column>
-		</columns>
-		<ColumnListItem>
-			<Text text="{Date}" />
-			<Text text="{Timefrom}-{TimeTo}" />
-			<VBox> <CheckBox></CheckBox>  <Input value="{Room1/name}" /> </VBox> 
-			<VBox> <CheckBox></CheckBox>  <Input value="{Room2/name}" /> </VBox> 
-			<VBox> <CheckBox></CheckBox>  <Input value="{Room3/name}" /> </VBox> 
-			
-		</ColumnListItem>
-	</Table>
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.f"
+	xmlns="sap.m" height="100%">
+
+<f:DynamicPage >
+
+<f:header>
+	<f:DynamicPageHeader pinnable="true">
+		<DatePicker
+			id="DP1"
+			placeholder="Enter Date" valueFormat="yyyy-MM-dd" displayFormat="long"
+			change="handleCalendarSelect"
+			class="sapUiSmallMarginBottom"/>
+	</f:DynamicPageHeader>
+	</f:header>
+		<f:content>
+		<Table
+			id="timeSlotTable"
+			headerText="Appointments"
+			items="{
+				path:'/TimeSlots',
+					parameters : {
+					$orderby : 'start',
+					$expand: 'to_bookings'
+				},
+				events : {dataReceived : '.onDataEvents', dataRequested: '.dataRequested'},
+				factory: '.buildItems'
+			}" 
+			>
+		</Table>
+		</f:content>
+	</f:DynamicPage>
 </mvc:View>
