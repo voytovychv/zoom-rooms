@@ -2,7 +2,7 @@
     "destinations": [
         {
             "name": "backend",
-            "url": "http://localhost:9001/"
+            "url": "http://206.81.25.86:8080/zcalendar/"
         }
     ]
 }
