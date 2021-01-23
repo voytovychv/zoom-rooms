@@ -78,7 +78,7 @@ function(coreLibrary, Fragment, Controller, DateFormat, JSONModel, unifiedLibrar
 				return "";
 			}
 			var formatter = DateFormat.getDateInstance({
-				pattern: "hh:mm"
+				pattern: "HH:mm"
 			});
 			return formatter.format(new Date(from)) + " - " + formatter.format(new Date(to));
 		},
